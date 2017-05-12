@@ -5,7 +5,6 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (defglobal 
   ?*majorScale* = (create$ 2 2 1 2 2 2 1 2 2 1)
-  ?*minorScale* = (create$ 2 1 2 2 1 3 1 2 1 2)
   ?*notes* = (create$ "a" "b" "c" "d" "e" "f" "g")
 ) 
 
@@ -55,7 +54,7 @@
 	)
 )
 
-(deffunction setAccord (?note1 ?note2 ?note3 $?c)
+(deffunction setChord (?note1 ?note2 ?note3 $?c)
 	(bind ?note1 (validateNote ?note1))
 	(bind ?note2 (validateNote ?note2))
 	(bind ?note3 (validateNote ?note3))
@@ -108,7 +107,7 @@
 	(not(scale))
 	=>
 	(reset)
-	(setAccord ?note1 ?note2 ?note3)	
+	(setChord ?note1 ?note2 ?note3)	
 )
 
 (defrule defineScale
