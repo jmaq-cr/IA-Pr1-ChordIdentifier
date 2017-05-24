@@ -6,88 +6,6 @@
 
     ?*tonality* = nil
 )
-(deffunction read-a-number ()
-    (bind ?iscorrect FALSE)
-    
-    (while (neq ?iscorrect TRUE)
-        (printout t "Ingrese un numero: ")
-        (bind ?number (read))   
-        (if (eq (numberp ?number) TRUE)
-            then 
-                (bind ?iscorrect TRUE)
-            else
-                (printout t "Incorrecto, vuelva a intentar." crlf)
-        )
-        
-    )
-    (return ?number)
-)
-
-(deffunction select-language ()
-    (printout t 
-    "         1- Notacion Inglesa" crlf crlf
-    "         2- Notacion Italiana" crlf crlf
-    "Seleccione la notacion" crlf crlf
-    )
-   (bind ?response (read-a-number))
-   (switch ?response
-      (case 1 then (bind ?*notation_type* 1))
-      (case 2 then (bind ?*notation_type* 2))
-      (default none)
-    )
-    (printout t "Tipo de notacion: " ?*notation_type* crlf)
-)
-
-(deffunction convert-note ()
-    (bind ?isvalid FALSE)
-
-    
-    (while (neq ?isvalid TRUE)
-        (printout t 
-        "Seleccione la nota" crlf crlf
-        )
-        (bind ?response (read))
-
-        (if (eq ?*notation_type* 1) ;notation_type = ing
-            then
-                (bind ?member_value (member$ ?response ?*notes_ing*))
-                (if (neq ?member_value FALSE)
-                    then
-                        (bind ?isvalid TRUE)
-                        (bind ?return_value ?response)
-                )
-        )
-
-        (if (eq ?*notation_type* 2) ;notation_type = ita
-            then
-                (bind ?member_value (member$ ?response ?*notes_ita*))
-                (if (neq ?member_value FALSE)
-                    then
-                        (bind ?isvalid TRUE)
-                        (bind ?return_value (nth$ ?member_value ?*notes_ing*))
-                )
-        )
-    )
-    (return ?return_value)
-)
-
-(deffunction convert-number-to-note ()
-    (bind ?isvalid FALSE)
-    (while (neq ?isvalid TRUE)
-        (printout t 
-        "Seleccione la nota" crlf crlf
-        )
-        (bind ?response (read))
-
-        (bind ?member_value (member$ ?response ?*notes_num*))
-        (if (neq ?member_value FALSE)
-            then
-                (bind ?isvalid TRUE)
-                (bind ?return_value (nth$ ?member_value ?*notes_ing*))
-        )
-    )
-    (return ?return_value)
-)
 
 (deffunction ask-question (?question $?allowed-values)
    (printout t ?question)
@@ -95,24 +13,78 @@
    (if (lexemep ?answer) 
        then (bind ?answer (lowcase ?answer)))
    (while (not (member ?answer ?allowed-values)) do
+      (printout t "Vuelva a intentar." crlf)
       (printout t ?question)
       (bind ?answer (read))
       (if (lexemep ?answer) 
           then (bind ?answer (lowcase ?answer))))
    ?answer)
 
+(deffunction ask-for-note (?question $?allowed-values)
+   (printout t ?question)
+   (bind ?answer (read))
+   (if (lexemep ?answer) 
+       then (bind ?answer (lowcase ?answer)))
+   (while (not (member ?answer ?allowed-values)) do
+      (printout t "Vuelva a intentar." crlf)
+      (printout t ?question)
+      (bind ?answer (read))
+      (if (lexemep ?answer) 
+          then (bind ?answer (lowcase ?answer))))
+   (bind ?member_index (member$ ?answer ?allowed-values))
+   (bind ?return_value (nth$ ?member_index ?*notes_ing*))
+
+   ?return_value)
+
 (deffunction yes-or-no-p (?question)
-   (bind ?response (ask-question ?question yes no y n))
-   (if (or (eq ?response yes) (eq ?response y))
+   (bind ?response (ask-question ?question yes si no y s n))
+   (if (or (eq ?response yes) (eq ?response y) (eq ?response si) (eq ?response s))
        then yes 
        else no))
 
-(deffunction select-tonality()
-    (if(eq (yes-or-no-p "Desea numeros (yes/no)? ") yes)
-        then (convert-number-to-note)
-        else (convert-note)
+(deffunction select-language ()
+    (printout t 
+    "         1- Notacion Inglesa" crlf crlf
+    "         2- Notacion Italiana" crlf crlf
     )
+   (bind ?response (ask-question "Seleccione la notacion: " 1 2))
+    (bind ?*notation_type* ?response)
+    (printout t "Tipo de notacion: " ?*notation_type* crlf)
+)
 
+(deffunction select-tonality()
+    (if(eq (yes-or-no-p "Desea numeros (s/n)? ") yes)
+        then (bind ?return_value (ask-for-note "Ingrese la nota:" ?*notes_num*))
+        else (if (eq ?*notation_type* 1) ;notation_type = ing
+                then
+                    (bind ?return_value (ask-for-note "Ingrese la nota:" ?*notes_ing*))
+                else
+                    (bind ?return_value (ask-for-note "Ingrese la nota:" ?*notes_ita*))
+             )
+    )
+)
+
+(deffunction select-three-notes()
+
+    (if (eq ?*notation_type* 1) ;notation_type = ing
+        then
+            (bind ?note1 (ask-for-note "Ingrese la nota1:" ?*notes_ing*))
+            (bind ?note2 (ask-for-note "Ingrese la nota2:" ?*notes_ing*))
+            (bind ?note3 (ask-for-note "Ingrese la nota3:" ?*notes_ing*))
+        else
+            (bind ?note1 (ask-for-note "Ingrese la nota1:" ?*notes_ita*))
+            (bind ?note2 (ask-for-note "Ingrese la nota2:" ?*notes_ita*))
+            (bind ?note3 (ask-for-note "Ingrese la nota3:" ?*notes_ita*))
+    )
 
 )
 
+(deffunction select-three-altitudes()
+    (bind ?a (ask-question "Ingrese la altura1:" 0 1 2 3 4 5 6 7 8))
+    (bind ?b (ask-question "Ingrese la altura2:" 0 1 2 3 4 5 6 7 8))
+    (bind ?c (ask-question "Ingrese la altura3:" 0 1 2 3 4 5 6 7 8))
+    (bind ?lo (min(min ?a ?b) ?c))
+    (bind ?hi (max(max ?a ?b) ?c))
+    (bind ?mid (- (+ ?a ?b ?c) ?lo ?hi))
+    (return (create$ ?lo ?mid ?hi))
+)
